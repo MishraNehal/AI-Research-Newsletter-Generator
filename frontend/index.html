@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The AI Weekly Digest</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500&family=Outfit:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
+<style>
+/* ── Reset & base ──────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #080808;
+  --surface: #111;
+  --surface2: #161616;
+  --border: #222;
+  --border2: #2a2a2a;
+  --text: #E4DDD3;
+  --text2: #888;
+  --text3: #444;
+  --gold: #C9A84C;
+  --gold2: #E2C27D;
+  --green: #3DAA72;
+  --red: #C0392B;
+  --font-serif: 'Playfair Display', Georgia, serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --font-sans: 'Outfit', sans-serif;
+}
+
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--font-sans);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── Background texture ────────────────────────────────── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(201,168,76,0.06), transparent),
+    url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.015'%3E%3Ccircle cx='30' cy='30' r='1'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── Layout ────────────────────────────────────────────── */
+.page { position: relative; z-index: 1; max-width: 860px; margin: 0 auto; padding: 0 24px 80px; }
+
+/* ── Header ────────────────────────────────────────────── */
+header {
+  padding: 60px 0 48px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 48px;
+}
+.header-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--gold);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.header-eyebrow::after {
+  content: '';
+  flex: 1;
+  max-width: 60px;
+  height: 1px;
+  background: var(--gold);
+  opacity: 0.4;
+}
+h1 {
+  font-family: var(--font-serif);
+  font-size: clamp(2.4rem, 5vw, 3.6rem);
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.1;
+  letter-spacing: -0.5px;
+  margin-bottom: 12px;
+}
+h1 em { color: var(--gold); font-style: italic; }
+.subtitle {
+  font-size: 15px;
+  color: var(--text2);
+  font-weight: 300;
+  line-height: 1.6;
+  max-width: 560px;
+}
+
+/* ── Input section ─────────────────────────────────────── */
+.input-section { margin-bottom: 40px; }
+.input-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text3);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.input-row { display: flex; gap: 10px; margin-bottom: 14px; }
+.topic-input {
+  flex: 1;
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 4px;
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  padding: 14px 18px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.topic-input::placeholder { color: var(--text3); }
+.topic-input:focus {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 1px rgba(201,168,76,0.2);
+}
+.generate-btn {
+  background: var(--gold);
+  color: #000;
+  border: none;
+  border-radius: 4px;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 500;
+  padding: 14px 28px;
+  cursor: pointer;
+  white-space: nowrap;
+  letter-spacing: 0.05em;
+  transition: background 0.2s, transform 0.15s;
+  position: relative;
+  overflow: hidden;
+}
+.generate-btn:hover { background: var(--gold2); transform: translateY(-1px); }
+.generate-btn:active { transform: translateY(0); }
+.generate-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+.generate-btn .btn-text { transition: opacity 0.2s; }
+.generate-btn.loading .btn-text { opacity: 0; }
+.generate-btn .spinner {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.generate-btn.loading .spinner { opacity: 1; }
+
+/* Suggestions */
+.suggestions { display: flex; gap: 8px; flex-wrap: wrap; }
+.suggestion-chip {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text2);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 5px 14px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.suggestion-chip:hover { border-color: var(--gold); color: var(--gold); }
+
+/* ── Agent pipeline ────────────────────────────────────── */
+.pipeline { margin-bottom: 32px; display: none; }
+.pipeline.visible { display: block; }
+.pipeline-title {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text3);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.agent-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 14px 18px;
+  margin-bottom: 8px;
+  transition: border-color 0.3s;
+}
+.agent-card.active { border-color: var(--gold); }
+.agent-card.done { border-color: #1a3a2a; }
+.agent-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--border2);
+  flex-shrink: 0;
+  transition: background 0.3s;
+}
+.agent-card.active .agent-dot {
+  background: var(--gold);
+  box-shadow: 0 0 8px rgba(201,168,76,0.5);
+  animation: pulse 1.2s infinite;
+}
+.agent-card.done .agent-dot { background: var(--green); }
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.6;transform:scale(1.2)} }
+.agent-icon { font-size: 18px; }
+.agent-info { flex: 1; }
+.agent-name { font-size: 14px; font-weight: 500; color: var(--text); }
+.agent-desc { font-size: 12px; color: var(--text2); margin-top: 2px; }
+.agent-badge {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  background: var(--surface2);
+  color: var(--text3);
+}
+.agent-card.active .agent-badge { background: rgba(201,168,76,0.1); color: var(--gold); }
+.agent-card.done .agent-badge { background: rgba(61,170,114,0.1); color: var(--green); }
+
+/* ── Timer ─────────────────────────────────────────────── */
+.timer-bar {
+  display: none;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text2);
+}
+.timer-bar.visible { display: flex; }
+.timer-pulse {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--gold);
+  animation: pulse 1s infinite;
+}
+
+/* ── Stats ─────────────────────────────────────────────── */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 24px;
+  display: none;
+}
+.stats-row.visible { display: grid; }
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 16px;
+  text-align: center;
+}
+.stat-num {
+  font-family: var(--font-serif);
+  font-size: 28px;
+  color: var(--gold);
+  display: block;
+}
+.stat-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-top: 4px;
+}
+
+/* ── Action buttons ────────────────────────────────────── */
+.actions { display: none; gap: 10px; margin-bottom: 24px; }
+.actions.visible { display: flex; }
+.action-btn {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  padding: 8px 18px;
+  border-radius: 4px;
+  border: 1px solid var(--border2);
+  background: transparent;
+  color: var(--text2);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.action-btn:hover { border-color: var(--gold); color: var(--gold); }
+.action-btn.primary { background: var(--gold); color: #000; border-color: var(--gold); }
+.action-btn.primary:hover { background: var(--gold2); }
+
+/* ── Newsletter output ─────────────────────────────────── */
+.newsletter-container { display: none; }
+.newsletter-container.visible { display: block; }
+.newsletter-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+.newsletter-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text3);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.tab-row { display: flex; gap: 4px; }
+.tab-btn {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  padding: 5px 12px;
+  border-radius: 3px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text3);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.tab-btn.active { background: var(--surface2); color: var(--text); border-color: var(--border2); }
+
+.newsletter-body {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 36px 40px;
+  line-height: 1.85;
+}
+/* Markdown styles inside newsletter */
+.newsletter-body h1 { font-family: var(--font-serif); font-size: 1.8rem; color: var(--text); margin-bottom: 8px; border-bottom: 1px solid var(--border); padding-bottom: 16px; margin-bottom: 20px; }
+.newsletter-body h2 { font-family: var(--font-serif); font-size: 1.2rem; color: var(--text); margin: 28px 0 12px; }
+.newsletter-body h3 { font-family: var(--font-serif); font-size: 1rem; color: var(--gold2); margin: 20px 0 8px; }
+.newsletter-body p { color: var(--text); font-size: 15px; margin-bottom: 14px; }
+.newsletter-body strong { color: var(--text); font-weight: 500; }
+.newsletter-body em { color: var(--text2); }
+.newsletter-body a { color: var(--gold); text-decoration: none; }
+.newsletter-body a:hover { text-decoration: underline; }
+.newsletter-body hr { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
+.newsletter-body code { font-family: var(--font-mono); font-size: 12px; background: var(--surface2); padding: 2px 6px; border-radius: 3px; color: var(--gold); }
+.newsletter-body blockquote { border-left: 2px solid var(--gold); padding-left: 16px; color: var(--text2); margin: 16px 0; }
+
+.raw-body {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 24px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text2);
+  white-space: pre-wrap;
+  line-height: 1.7;
+  overflow-x: auto;
+  display: none;
+}
+
+/* ── Error ─────────────────────────────────────────────── */
+.error-box {
+  background: rgba(192,57,43,0.08);
+  border: 1px solid rgba(192,57,43,0.3);
+  border-radius: 6px;
+  padding: 16px 20px;
+  color: #E57373;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  display: none;
+  margin-bottom: 24px;
+}
+.error-box.visible { display: block; }
+
+/* ── Divider ───────────────────────────────────────────── */
+.divider { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
+
+/* ── Footer ────────────────────────────────────────────── */
+footer {
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text3);
+  padding-top: 32px;
+  border-top: 1px solid var(--border);
+  letter-spacing: 0.05em;
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Header -->
+  <header>
+    <div class="header-eyebrow">CrewAI · Groq · Serper · arxiv</div>
+    <h1>The AI Weekly<br><em>Digest</em></h1>
+    <p class="subtitle">Three specialized AI agents research, summarize, and edit the week's most important papers — on any topic you choose.</p>
+  </header>
+
+  <!-- Input -->
+  <section class="input-section">
+    <div class="input-label">Research topic</div>
+    <div class="input-row">
+      <input
+        class="topic-input"
+        id="topicInput"
+        type="text"
+        placeholder="e.g. multimodal AI, RAG systems, AI safety..."
+        autocomplete="off"
+      />
+      <button class="generate-btn" id="generateBtn" onclick="generate()">
+        <span class="btn-text">Generate →</span>
+        <span class="spinner">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2.5">
+            <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83">
+              <animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="0.8s" repeatCount="indefinite"/>
+            </path>
+          </svg>
+        </span>
+      </button>
+    </div>
+    <div class="suggestions">
+      <span class="suggestion-chip" onclick="setTopic('AI Agents')">AI Agents</span>
+      <span class="suggestion-chip" onclick="setTopic('LLM Reasoning')">LLM Reasoning</span>
+      <span class="suggestion-chip" onclick="setTopic('Multimodal AI')">Multimodal AI</span>
+      <span class="suggestion-chip" onclick="setTopic('AI Safety')">AI Safety</span>
+      <span class="suggestion-chip" onclick="setTopic('RAG Systems')">RAG Systems</span>
+      <span class="suggestion-chip" onclick="setTopic('Diffusion Models')">Diffusion Models</span>
+    </div>
+  </section>
+
+  <!-- Agent pipeline -->
+  <div class="pipeline" id="pipeline">
+    <div class="pipeline-title">Crew execution</div>
+    <div class="agent-card" id="agent0">
+      <div class="agent-dot"></div>
+      <div class="agent-icon">🔍</div>
+      <div class="agent-info">
+        <div class="agent-name">Senior AI Research Scout</div>
+        <div class="agent-desc">Searching arxiv, HuggingFace & web for top papers</div>
+      </div>
+      <div class="agent-badge" id="badge0">Waiting</div>
+    </div>
+    <div class="agent-card" id="agent1">
+      <div class="agent-dot"></div>
+      <div class="agent-icon">📝</div>
+      <div class="agent-info">
+        <div class="agent-name">Research Summarizer</div>
+        <div class="agent-desc">Writing structured What / How / Why TLDRs</div>
+      </div>
+      <div class="agent-badge" id="badge1">Waiting</div>
+    </div>
+    <div class="agent-card" id="agent2">
+      <div class="agent-dot"></div>
+      <div class="agent-icon">✏️</div>
+      <div class="agent-info">
+        <div class="agent-name">Newsletter Editor</div>
+        <div class="agent-desc">Assembling the final newsletter</div>
+      </div>
+      <div class="agent-badge" id="badge2">Waiting</div>
+    </div>
+  </div>
+
+  <!-- Timer -->
+  <div class="timer-bar" id="timerBar">
+    <div class="timer-pulse"></div>
+    <span id="timerText">Elapsed: 0s</span>
+  </div>
+
+  <!-- Error -->
+  <div class="error-box" id="errorBox"></div>
+
+  <!-- Stats -->
+  <div class="stats-row" id="statsRow">
+    <div class="stat-card">
+      <span class="stat-num" id="statTime">—</span>
+      <div class="stat-label">Seconds</div>
+    </div>
+    <div class="stat-card">
+      <span class="stat-num" id="statWords">—</span>
+      <div class="stat-label">Words</div>
+    </div>
+    <div class="stat-card">
+      <span class="stat-num" id="statRead">—</span>
+      <div class="stat-label">Min read</div>
+    </div>
+  </div>
+
+  <!-- Actions -->
+  <div class="actions" id="actionsRow">
+    <button class="action-btn primary" onclick="downloadNewsletter()">⬇ Download .md</button>
+    <button class="action-btn" onclick="copyNewsletter()">Copy text</button>
+    <button class="action-btn" onclick="resetUI()">Generate another</button>
+  </div>
+
+  <!-- Newsletter output -->
+  <div class="newsletter-container" id="newsletterContainer">
+    <div class="newsletter-header">
+      <div class="newsletter-label">Output</div>
+      <div class="tab-row">
+        <button class="tab-btn active" id="tabRendered" onclick="showTab('rendered')">Rendered</button>
+        <button class="tab-btn" id="tabRaw" onclick="showTab('raw')">Raw markdown</button>
+      </div>
+    </div>
+    <div class="newsletter-body" id="newsletterBody"></div>
+    <pre class="raw-body" id="rawBody"></pre>
+  </div>
+
+  <hr class="divider">
+  <footer>Built with CrewAI &middot; Groq LLaMA 3.3 70B &middot; Serper &middot; arxiv</footer>
+</div>
+
+<script>
+const API = window.location.origin;  // ✅ auto-detects URL in production
+let newsletterText = '';
+let currentTopic = '';
+let timerInterval = null;
+let startTime = null;
+
+function setTopic(t) {
+  document.getElementById('topicInput').value = t;
+  document.getElementById('topicInput').focus();
+}
+
+function setAgent(i, state) {
+  // state: 'idle' | 'active' | 'done'
+  const card = document.getElementById(`agent${i}`);
+  const badge = document.getElementById(`badge${i}`);
+  card.className = 'agent-card' + (state === 'active' ? ' active' : state === 'done' ? ' done' : '');
+  badge.textContent = state === 'active' ? 'Running...' : state === 'done' ? '✓ Done' : 'Waiting';
+}
+
+function startTimer() {
+  startTime = Date.now();
+  timerInterval = setInterval(() => {
+    const s = Math.round((Date.now() - startTime) / 1000);
+    document.getElementById('timerText').textContent = `Elapsed: ${s}s`;
+  }, 1000);
+}
+
+function stopTimer() {
+  clearInterval(timerInterval);
+}
+
+async function generate() {
+  const topic = document.getElementById('topicInput').value.trim();
+  if (!topic) { alert('Please enter a topic!'); return; }
+
+  currentTopic = topic;
+  const btn = document.getElementById('generateBtn');
+
+  // Reset UI
+  document.getElementById('errorBox').classList.remove('visible');
+  document.getElementById('newsletterContainer').classList.remove('visible');
+  document.getElementById('statsRow').classList.remove('visible');
+  document.getElementById('actionsRow').classList.remove('visible');
+
+  // Show pipeline
+  document.getElementById('pipeline').classList.add('visible');
+  document.getElementById('timerBar').classList.add('visible');
+  btn.classList.add('loading');
+  btn.disabled = true;
+
+  // Set all agents to idle first
+  setAgent(0, 'idle'); setAgent(1, 'idle'); setAgent(2, 'idle');
+
+  // Simulate agent progression (visual only — real work happens in backend)
+  startTimer();
+  setTimeout(() => setAgent(0, 'active'), 300);
+  setTimeout(() => { setAgent(0, 'done'); setAgent(1, 'active'); }, 12000);
+  setTimeout(() => { setAgent(1, 'done'); setAgent(2, 'active'); }, 22000);
+
+  try {
+    const response = await fetch(`${API}/generate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ topic })
+    });
+
+    stopTimer();
+
+    if (!response.ok) {
+      const err = await response.json();
+      throw new Error(err.detail || 'Server error');
+    }
+
+    const data = await response.json();
+    newsletterText = data.newsletter;
+
+    // Mark all done
+    setAgent(0, 'done'); setAgent(1, 'done'); setAgent(2, 'done');
+    document.getElementById('timerBar').classList.remove('visible');
+
+    // Show stats
+    document.getElementById('statTime').textContent = data.elapsed_seconds;
+    document.getElementById('statWords').textContent = data.word_count;
+    document.getElementById('statRead').textContent = Math.max(1, Math.round(data.word_count / 200));
+    document.getElementById('statsRow').classList.add('visible');
+
+    // Show actions
+    document.getElementById('actionsRow').classList.add('visible');
+
+    // Render newsletter
+    document.getElementById('newsletterBody').innerHTML = marked.parse(newsletterText);
+    document.getElementById('rawBody').textContent = newsletterText;
+    document.getElementById('newsletterContainer').classList.add('visible');
+
+  } catch (err) {
+    stopTimer();
+    setAgent(0, 'idle'); setAgent(1, 'idle'); setAgent(2, 'idle');
+    document.getElementById('timerBar').classList.remove('visible');
+    document.getElementById('pipeline').classList.remove('visible');
+    const box = document.getElementById('errorBox');
+    box.textContent = `❌ ${err.message}`;
+    box.classList.add('visible');
+  } finally {
+    btn.classList.remove('loading');
+    btn.disabled = false;
+  }
+}
+
+function showTab(tab) {
+  const rendered = tab === 'rendered';
+  document.getElementById('newsletterBody').style.display = rendered ? 'block' : 'none';
+  document.getElementById('rawBody').style.display = rendered ? 'none' : 'block';
+  document.getElementById('tabRendered').className = 'tab-btn' + (rendered ? ' active' : '');
+  document.getElementById('tabRaw').className = 'tab-btn' + (!rendered ? ' active' : '');
+}
+
+function downloadNewsletter() {
+  const blob = new Blob([newsletterText], { type: 'text/markdown' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `newsletter_${currentTopic.replace(/\s+/g,'_')}_${new Date().toISOString().slice(0,10)}.md`;
+  a.click();
+}
+
+function copyNewsletter() {
+  navigator.clipboard.writeText(newsletterText).then(() => {
+    const btn = event.target;
+    btn.textContent = '✓ Copied!';
+    setTimeout(() => btn.textContent = 'Copy text', 2000);
+  });
+}
+
+function resetUI() {
+  document.getElementById('newsletterContainer').classList.remove('visible');
+  document.getElementById('statsRow').classList.remove('visible');
+  document.getElementById('actionsRow').classList.remove('visible');
+  document.getElementById('pipeline').classList.remove('visible');
+  document.getElementById('topicInput').value = '';
+  document.getElementById('topicInput').focus();
+}
+
+// Enter key to generate
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('topicInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') generate();
+  });
+});
+</script>
+</body>
+</html>

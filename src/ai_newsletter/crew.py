@@ -1,17 +1,28 @@
+import os
+os.environ["CREWAI_TELEMETRY_OPT_OUT"] = "true"  # ✅ kills the event pairing warnings
 from crewai import Agent, Crew, Process, Task, LLM
 from crewai.project import CrewBase, agent, crew, task
 from crewai.agents.agent_builder.base_agent import BaseAgent
-import os
+
 
 from ai_newsletter.tools.search_tool import search_tool, news_search_tool
 from ai_newsletter.tools.arxiv_tool import arxiv_tool
 
-# ✅ Define Groq LLM once, reuse across all agents
+# # ✅ Define Groq LLM once, reuse across all agents
+# groq_llm = LLM(
+#     model=os.environ.get("MODEL", "groq/llama-3.3-70b-versatile"),
+#     temperature=0.3,      # lower = more factual, less hallucination
+#     max_tokens=1024,
+# )
+
+# ✅ Gemini — 1M TPM free, no rate limit issues
 groq_llm = LLM(
-    model=os.environ.get("MODEL", "groq/llama-3.3-70b-versatile"),
-    temperature=0.3,      # lower = more factual, less hallucination
-    max_tokens=1024,
+    model="gemini/gemini-2.5-flash-lite",
+    temperature=0.3,
+    max_tokens=2048,
+    api_key=os.environ.get("GEMINI_API_KEY"),
 )
+
 
 @CrewBase
 class AiNewsletter():
