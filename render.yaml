@@ -1,17 +1,17 @@
 services:
   - type: web
-    name: ai-newsletter-crew
+    name: AI-Research-Newsletter-Generator
     runtime: python
     buildCommand: pip install -r requirements.txt
     startCommand: uvicorn api:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: PYTHONPATH
         value: src
-      - key: GROQ_API_KEY
-        sync: false        # you'll enter this manually in Render dashboard
+      - key: GEMINI_API_KEY
+        sync: false   # add manually in dashboard
       - key: SERPER_API_KEY
         sync: false
       - key: MODEL
-        value: groq/llama-3.3-70b-versatile
+        value: gemini/gemini-2.5-flash-lite
       - key: CREWAI_TELEMETRY_OPT_OUT
         value: "true"
