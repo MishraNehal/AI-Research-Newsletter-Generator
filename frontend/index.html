@@ -504,7 +504,7 @@ footer {
   </div>
 
   <hr class="divider">
-  <footer>Built with CrewAI &middot; Groq LLaMA 3.3 70B &middot; Serper &middot; arxiv</footer>
+  <footer>Built with CrewAI &middot; Gemini 2.5 Flash Lite &middot; Serper &middot; arxiv</footer>
 </div>
 
 <script>
@@ -541,7 +541,7 @@ function stopTimer() {
 
 async function generate() {
   const topic = document.getElementById('topicInput').value.trim();
-  if (!topic) { alert('Please enter a topic!'); return; }
+  if (!topic) { topic = "AI LLMs and Agents"; }
 
   currentTopic = topic;
   const btn = document.getElementById('generateBtn');

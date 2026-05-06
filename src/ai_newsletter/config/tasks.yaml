@@ -65,7 +65,8 @@ summarization_task:
 newsletter_task:
   description: >
     Assemble the paper summaries into a complete weekly newsletter in markdown.
-
+    TODAY'S DATE IS: {current_date}. USE THIS EXACT DATE — do not use any other date.
+    
     REQUIRED STRUCTURE (in this exact order):
 
     # The AI Weekly Digest

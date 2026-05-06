@@ -87,6 +87,7 @@ async def generate_newsletter(request: GenerateRequest):
         inputs = {
             "topic": request.topic.strip(),
             "current_year": str(datetime.now().year),
+            "current_date": datetime.now().strftime("%B %d, %Y"),  
         }
 
         # Run with retry for rate limits

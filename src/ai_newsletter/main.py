@@ -12,6 +12,7 @@ def run():
     inputs = {
         "topic": topic,
         "current_year": str(datetime.now().year),
+        "current_date": datetime.now().strftime("%B %d, %Y"),  # ✅ e.g. "May 06, 2026"
     }
 
     print(f"\n🚀 Starting newsletter crew for topic: '{topic}'\n")
