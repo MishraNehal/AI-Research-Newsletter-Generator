@@ -2,7 +2,6 @@ services:
   - type: web
     name: AI-Research-Newsletter-Generator
     runtime: python
-    pythonVersion: "3.11.9"
     buildCommand: pip install --upgrade pip && pip install tiktoken==0.9.0 --prefer-binary && pip install --prefer-binary -r requirements.txt
     startCommand: uvicorn api:app --host 0.0.0.0 --port $PORT
     envVars:

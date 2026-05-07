@@ -24,4 +24,3 @@ streamlit
 pydantic
 httpx
 google-generativeai
-tiktoken==0.9.0
