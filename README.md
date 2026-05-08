@@ -1,55 +1,92 @@
-# AiNewsletter Crew
+# AI Research Newsletter Generator
 
-Welcome to the AiNewsletter Crew project, powered by [crewAI](https://crewai.com). This template is designed to help you set up a multi-agent AI system with ease, leveraging the powerful and flexible framework provided by crewAI. Our goal is to enable your agents to collaborate effectively on complex tasks, maximizing their collective intelligence and capabilities.
+A multi-agent AI system that researches, summarizes, and generates a weekly AI research newsletter on any topic — automatically.
 
-## Installation
+**Live Demo → [Try it here](https://ai-research-newsletter-generator-pyd9jzujxzswrbsvdptdrv.streamlit.app)**
 
-Ensure you have Python >=3.10 <3.14 installed on your system. This project uses [UV](https://docs.astral.sh/uv/) for dependency management and package handling, offering a seamless setup and execution experience.
+---
 
-First, if you haven't already, install uv:
+## What it does
 
+You enter a topic. Three AI agents get to work:
+
+1. **Researcher** — searches the web and arxiv for the latest papers
+2. **Summarizer** — writes a clear 3-sentence TLDR for each paper
+3. **Editor** — assembles everything into a polished newsletter
+
+Output is a ready-to-publish markdown newsletter saved locally and viewable in the browser.
+
+---
+
+## Tech Stack
+
+- **Agent Framework** — CrewAI
+- **LLM** — Google Gemini 2.5 Flash Lite
+- **Web Search** — Serper API
+- **Paper Search** — arxiv API
+- **UI** — Streamlit
+- **Language** — Python 3.11
+
+---
+
+## Setup
+
+**1. Clone the repo**
 ```bash
-pip install uv
+git clone https://github.com/MishraNehal/AI-Research-Newsletter-Generator
+cd AI-Research-Newsletter-Generator
 ```
 
-Next, navigate to your project directory and install the dependencies:
-
-(Optional) Lock the dependencies and install them by using the CLI command:
+**2. Install dependencies**
 ```bash
-crewai install
-```
-### Customizing
-
-**Add your `OPENAI_API_KEY` into the `.env` file**
-
-- Modify `src/ai_newsletter/config/agents.yaml` to define your agents
-- Modify `src/ai_newsletter/config/tasks.yaml` to define your tasks
-- Modify `src/ai_newsletter/crew.py` to add your own logic, tools and specific args
-- Modify `src/ai_newsletter/main.py` to add custom inputs for your agents and tasks
-
-## Running the Project
-
-To kickstart your crew of AI agents and begin task execution, run this from the root folder of your project:
-
-```bash
-$ crewai run
+pip install -r requirements.txt
 ```
 
-This command initializes the ai_newsletter Crew, assembling the agents and assigning them tasks as defined in your configuration.
+**3. Add your API keys — create a `.env` file**
+```
+GEMINI_API_KEY=your_key_here
+SERPER_API_KEY=your_key_here
+MODEL=gemini/gemini-2.5-flash-lite
+```
 
-This example, unmodified, will run the create a `report.md` file with the output of a research on LLMs in the root folder.
+**4. Run**
+```bash
+# Command line
+python -m ai_newsletter.main "multimodal AI"
 
-## Understanding Your Crew
+# Streamlit UI
+streamlit run streamlit_app.py
+```
 
-The ai_newsletter Crew is composed of multiple AI agents, each with unique roles, goals, and tools. These agents collaborate on a series of tasks, defined in `config/tasks.yaml`, leveraging their collective skills to achieve complex objectives. The `config/agents.yaml` file outlines the capabilities and configurations of each agent in your crew.
+---
 
-## Support
+## Project Structure
 
-For support, questions, or feedback regarding the AiNewsletter Crew or crewAI.
-- Visit our [documentation](https://docs.crewai.com)
-- Reach out to us through our [GitHub repository](https://github.com/joaomdmoura/crewai)
-- [Join our Discord](https://discord.com/invite/X4JWnZnxPb)
-- [Chat with our docs](https://chatg.pt/DWjSBZn)
+```
+ai_newsletter/
+├── src/ai_newsletter/
+│   ├── config/
+│   │   ├── agents.yaml    ← agent prompts
+│   │   └── tasks.yaml     ← task definitions
+│   ├── tools/
+│   │   ├── search_tool.py
+│   │   └── arxiv_tool.py
+│   ├── crew.py            ← crew definition
+│   └── main.py            ← entry point
+├── streamlit_app.py       ← UI
+├── requirements.txt
+└── .env                   ← API keys (not committed)
+```
 
-Let's create wonders together with the power and simplicity of crewAI.
-# AI-Research-Newsletter-Generator
+---
+
+## API Keys Required
+
+| Service | Free Tier | Link |
+|---|---|---|
+| Google Gemini | Yes | [aistudio.google.com](https://aistudio.google.com) |
+| Serper | 2500 searches/month | [serper.dev](https://serper.dev) |
+
+---
+
+*Built with CrewAI · Gemini 2.5 Flash Lite · Serper · arxiv*
